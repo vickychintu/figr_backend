@@ -16,5 +16,14 @@ router.post(
   verifyAccessToken,
   ProjectController.getStylesByProjectId
 );
-
+router.post(
+  "/addComponents",
+  verifyAccessToken,
+  ProjectController.addComponent
+);
+router.get(
+  "/getComponents/:projectId",
+  verifyAccessToken,
+  ProjectController.getComponentsByProjectId
+);
 module.exports = router;

@@ -1,6 +1,7 @@
 const { Mongoose, default: mongoose } = require("mongoose");
 const Project = require("../models/project");
 const Style = require("../models/style");
+const Component = require("../models/components");
 
 exports.createProject = async (req, res) => {
   try {
@@ -60,5 +61,54 @@ exports.getStylesByProjectId = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+exports.addComponent = async (req, res) => {
+  try {
+    const { projectId, colorId, spaceId, radiusId, name, type } = req.body;
+
+    // Create a new Component instance
+    const newComponent = new Component({
+      projectId,
+      colorId,
+      spaceId,
+      radiusId,
+      name,
+      type,
+    });
+
+    // Save the new component to the database
+    const savedComponent = await newComponent.save();
+
+    res.status(201).json(savedComponent);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add component" });
+  }
+};
+exports.getComponentsByProjectId = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    // Fetch components by project ID and populate style fields
+    const components = await Component.find({ projectId })
+      .populate("colorId")
+      .populate("spaceId")
+      .populate("radiusId");
+
+    // Group components by type
+    const groupedComponents = components.reduce((acc, component) => {
+      acc[component.type] = acc[component.type] || [];
+      acc[component.type].push({
+        ...component._doc,
+        colorValue: component.colorId.value,
+        spaceValue: component.spaceId.value,
+        radiusValue: component.radiusId.value,
+      });
+      return acc;
+    }, {});
+
+    res.status(200).json(groupedComponents);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch components" });
   }
 };
