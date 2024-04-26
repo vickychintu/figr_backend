@@ -11,5 +11,10 @@ router.get(
   ProjectController.getProjectsByUserId
 );
 router.post("/addStyle", verifyAccessToken, ProjectController.addStyle);
+router.post(
+  "/getStyles",
+  verifyAccessToken,
+  ProjectController.getStylesByProjectId
+);
 
 module.exports = router;

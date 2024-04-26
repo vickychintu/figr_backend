@@ -1,3 +1,4 @@
+const { Mongoose, default: mongoose } = require("mongoose");
 const Project = require("../models/project");
 const Style = require("../models/style");
 
@@ -20,10 +21,8 @@ exports.createProject = async (req, res) => {
 exports.getProjectsByUserId = async (req, res) => {
   try {
     const userId = req.user.userId; // Using req.user.userId from the middleware
-
     // Find all projects belonging to the user
     const projects = await Project.find({ user_id: userId });
-    console.log(projects);
     res.status(200).json(projects);
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
@@ -32,7 +31,6 @@ exports.getProjectsByUserId = async (req, res) => {
 exports.addStyle = async (req, res) => {
   try {
     const { type, projectId, name, value } = req.body;
-    console.log(projectId);
     const newStyle = new Style({ type, projectId, name, value });
     await newStyle.save();
     res
@@ -45,11 +43,11 @@ exports.addStyle = async (req, res) => {
 };
 exports.getStylesByProjectId = async (req, res) => {
   try {
-    const projectId = req.params.projectId;
-
+    const { projectId } = req.body;
+    console.log(projectId);
     // Fetch styles for the specified projectId and categorize by type
     const styles = await Style.aggregate([
-      { $match: { projectId: projectId } },
+      { $match: { projectId: new mongoose.Types.ObjectId(projectId) } },
       {
         $group: {
           _id: "$type",
@@ -57,9 +55,10 @@ exports.getStylesByProjectId = async (req, res) => {
         },
       },
     ]);
-
+    console.log(styles);
     res.status(200).json(styles);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
